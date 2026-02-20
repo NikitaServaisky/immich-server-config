@@ -1,0 +1,11 @@
+# Secrets
+.env
+.env.bak*
+
+# Heavy Data
+immich-data/
+backups_db/
+
+# Binaries & Archives
+*.tar.gz
+*.zip

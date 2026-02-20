@@ -1,0 +1,106 @@
+services:
+  immich-new15.postgres:
+    container_name: immich-new15.postgres
+    image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE_NAME}
+      TZ: ${TZ}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_DATABASE_NAME} -h 127.0.0.1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  immich-new15.redis:
+    image: redis:7-alpine
+    container_name: immich-new15.redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  immich-new15.machine-learning:
+    image: ghcr.io/immich-app/immich-machine-learning:${ML_VERSION}
+    container_name: immich-new15.machine-learning
+    environment:
+      TZ: ${TZ}
+      DB_VECTOR_EXTENSION: ${DB_VECTOR_EXTENSION}
+    volumes:
+      - model-cache:/cache
+    depends_on:
+      immich-new15.postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  immich-new15.server:
+    image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION}
+    container_name: immich-new15.server
+    environment:
+      TZ: ${TZ}
+      DB_HOSTNAME: ${DB_HOSTNAME}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_DATABASE_NAME: ${DB_DATABASE_NAME}
+      REDIS_HOSTNAME: ${REDIS_HOSTNAME}
+      REDIS_PORT: ${REDIS_PORT}
+      MACHINE_LEARNING_URL: ${IMMICH_MACHINE_LEARNING_URL}
+      IMMICH_MACHINE_LEARNING_URL: ${IMMICH_MACHINE_LEARNING_URL}
+      IMMICH_HOST: ${IMMICH_HOST}
+      HOST: ${HOST}
+      PORT: "${IMMICH_HTTP_PORT}"
+      IMMICH_TRUST_PROXY: ${IMMICH_TRUST_PROXY}
+    volumes:
+      # התיקון המדויק: מצביעים ישירות לתיקיית ה-upload ב-RAID
+      - /mnt/storage/media/immich_media:/usr/src/app/upload
+      - /mnt/storage/media:/external_media:ro
+      - /mnt/storage/media/immich_media:/usr/src/app/upload
+      - /mnt/storage/media/immich_media/library:/mnt/external_library:ro
+    ports:
+      - "${IMMICH_HTTP_PORT}:2283"
+    depends_on:
+      immich-new15.postgres:
+        condition: service_healthy
+      immich-new15.redis:
+        condition: service_started
+      immich-new15.machine-learning:
+        condition: service_started
+    restart: unless-stopped
+
+  immich-new15.microservices:
+    image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION}
+    container_name: immich-new15.microservices
+    environment:
+      TZ: ${TZ}
+      DB_HOSTNAME: ${DB_HOSTNAME}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_DATABASE_NAME: ${DB_DATABASE_NAME}
+      REDIS_HOSTNAME: ${REDIS_HOSTNAME}
+      REDIS_PORT: ${REDIS_PORT}
+      MACHINE_LEARNING_URL: ${IMMICH_MACHINE_LEARNING_URL}
+      IMMICH_MACHINE_LEARNING_URL: ${IMMICH_MACHINE_LEARNING_URL}
+    volumes:
+      # גם כאן - חייב להיות זהה לשרת
+      - /mnt/storage/media/immich_media:/usr/src/app/upload
+      - /mnt/storage/media:/external_media:ro
+      - /mnt/storage/media/immich_media:/usr/src/app/upload
+      - /mnt/storage/media/immich_media/library:/mnt/external_library:ro
+    depends_on:
+      immich-new15.postgres:
+        condition: service_healthy
+      immich-new15.redis:
+        condition: service_started
+      immich-new15.machine-learning:
+        condition: service_started
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  model-cache:
