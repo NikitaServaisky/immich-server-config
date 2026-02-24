@@ -59,9 +59,8 @@ services:
     volumes:
       # התיקון המדויק: מצביעים ישירות לתיקיית ה-upload ב-RAID
       - /mnt/storage/media/immich_media:/usr/src/app/upload
-      - /mnt/storage/media:/external_media:ro
-      - /mnt/storage/media/immich_media:/usr/src/app/upload
-      - /mnt/storage/media/immich_media/library:/mnt/external_library:ro
+      - /mnt/storage/media:/external_media:rw
+      - /mnt/storage/media/immich_media/library:/mnt/external_library:rw
     ports:
       - "${IMMICH_HTTP_PORT}:2283"
     devices:
@@ -94,9 +93,8 @@ services:
     volumes:
       # גם כאן - חייב להיות זהה לשרת
       - /mnt/storage/media/immich_media:/usr/src/app/upload
-      - /mnt/storage/media:/external_media:ro
-      - /mnt/storage/media/immich_media:/usr/src/app/upload
-      - /mnt/storage/media/immich_media/library:/mnt/external_library:ro
+      - /mnt/storage/media:/external_media:rw
+      - /mnt/storage/media/immich_media/library:/mnt/external_library:rw
 
     devices:
       - /dev/dri:/dev/dri
