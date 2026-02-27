@@ -96,11 +96,11 @@ services:
       - /mnt/storage/media:/external_media:rw
       - /mnt/storage/media/immich_media/library:/mnt/external_library:rw
 
-    devices:
-      - /dev/dri:/dev/dri
-    group_add:
-      - "109" # render
-      - "44" # video
+#    devices:
+ #     - /dev/dri:/dev/dri
+  #  group_add:
+   #   - "109" # render
+    #  - "44" # video
     depends_on:
       immich-new15.postgres:
         condition: service_healthy
