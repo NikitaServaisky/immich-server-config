@@ -77,3 +77,6 @@ services:
         condition: service_started
     restart: unless-stopped
 
+volumes:
+  pgdata:
+  model-cache:
