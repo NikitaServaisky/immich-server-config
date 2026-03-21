@@ -77,39 +77,3 @@ services:
         condition: service_started
     restart: unless-stopped
 
-  immich-new15.microservices:
-    image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION}
-    container_name: immich-new15.microservices
-    environment:
-      TZ: ${TZ}
-      DB_HOSTNAME: ${DB_HOSTNAME}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_DATABASE_NAME: ${DB_DATABASE_NAME}
-      REDIS_HOSTNAME: ${REDIS_HOSTNAME}
-      REDIS_PORT: ${REDIS_PORT}
-      MACHINE_LEARNING_URL: ${IMMICH_MACHINE_LEARNING_URL}
-      IMMICH_MACHINE_LEARNING_URL: ${IMMICH_MACHINE_LEARNING_URL}
-    volumes:
-      # גם כאן - חייב להיות זהה לשרת
-      - /mnt/storage/media/immich_media:/usr/src/app/upload
-      - /mnt/storage/media:/external_media:rw
-      - /mnt/storage/media/immich_media/library:/mnt/external_library:rw
-
-#    devices:
- #     - /dev/dri:/dev/dri
-  #  group_add:
-   #   - "109" # render
-    #  - "44" # video
-    depends_on:
-      immich-new15.postgres:
-        condition: service_healthy
-      immich-new15.redis:
-        condition: service_started
-      immich-new15.machine-learning:
-        condition: service_started
-    restart: unless-stopped
-
-volumes:
-  pgdata:
-  model-cache:
