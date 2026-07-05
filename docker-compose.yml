@@ -57,17 +57,14 @@ services:
       PORT: "${IMMICH_HTTP_PORT}"
       IMMICH_TRUST_PROXY: ${IMMICH_TRUST_PROXY}
     volumes:
-      # התיקון המדויק: מצביעים ישירות לתיקיית ה-upload ב-RAID
       - /mnt/storage/media/immich_media:/usr/src/app/upload
       - /mnt/storage/media:/external_media:rw
       - /mnt/storage/media/immich_media/library:/mnt/external_library:rw
     ports:
       - "${IMMICH_HTTP_PORT}:2283"
-#    devices:
- #     - /dev/dri:/dev/dri
-  #  group_add:
-   #   - "109" # render
-    #  - "44" # video
+    networks:
+      - default
+      - proxy-net
     depends_on:
       immich-new15.postgres:
         condition: service_healthy
@@ -76,7 +73,12 @@ services:
       immich-new15.machine-learning:
         condition: service_started
     restart: unless-stopped
-
 volumes:
   pgdata:
   model-cache:
+
+networks:
+  default:
+    driver: bridge
+  proxy-net:
+    external: true
